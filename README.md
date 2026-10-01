@@ -50,19 +50,19 @@ When you sign up as a developer, PayPal automatically creates one default **Busi
 
 You will find both accounts on the **Sandbox Accounts** page. Here's how to open it:
 
-### Log in to the Developer Dashboard
+### 1. Log in to the Developer Dashboard
 
 Sign in to the [PayPal Developer Dashboard](https://developer.paypal.com/dashboard/).
 
-### Switch to PayPal sandbox
+### 2. Switch to PayPal sandbox
 
 Select the **PayPal sandbox** environment so you work with test data, not live data.
 
-### Open Testing Tools
+### 3. Open Testing Tools
 
 Expand **Testing Tools** in the left sidebar.
 
-### Select Sandbox Accounts
+### 4. Select Sandbox Accounts
 
 Select **Sandbox Accounts** to list your test buyer and seller accounts.
 
@@ -75,7 +75,7 @@ Select **Sandbox Accounts** to list your test buyer and seller accounts.
 
 Need more than the two defaults? Create extra test accounts for additional roles, balances, or currencies from your [Developer Dashboard](https://developer.paypal.com/dashboard/accounts) page.
 
-### Create the account
+### 1. Create the account
 
 Click **Create Account**, set the **Account Type** to Personal or Business, choose a **Country**, and click **Create Account**. 
 
@@ -83,11 +83,11 @@ PayPal fills in default balances and details. For custom balances or card data, 
 
 ![The Create Account dialog: choose an account type and country, then create](https://www.paypalobjects.com/ppdevdocs/create-sandbox-account.png "Creating a Sandbox account: pick the type and country, then create.")
 
-### Note the email and password
+### 2. Note the email and password
 
-Each account gets a generated email and password. You use the email in your test API calls, and the email and password to log in to the Sandbox. Change the password anytime from the (**...**) menu under **View/Edit Account**.
+Each account gets a generated email and password. You use the email and password to log in to the Sandbox for reach account. Change the password anytime from the (**...**) menu under **View/Edit Account**.
 
-## Fund and inspect test accounts
+## 3. Fund and inspect test accounts
 
 Every Sandbox account comes preloaded with fake money, and each one keeps its own balance and transaction history, just like a real account. You manage all of it from **Testing Tools**, then **Sandbox Accounts** in the Developer Dashboard.
 
@@ -118,21 +118,21 @@ PayPal sandbox accounts only work on the PayPal sandbox site. Go to the [PayPal 
 
 To call the PayPal APIs from your own code, you need a Sandbox **Client ID** and **Secret**.
 
-### Open Apps & Credentials
+### 1. Open Apps & Credentials
 
 In the Developer Dashboard, open [Apps & Credentials](https://developer.paypal.com/dashboard/applications/sandbox) and select the **Sandbox** tab.
 
-### Use or create an app
+### 2. Use or create an app
 
 Use the **Default Application**, or click **Create App** to make your own.
 
-### Copy the Client ID and Secret
+### 3. Copy the Client ID and Secret
 
 Copy the **Client ID** and **Secret**.
 
 ![Apps & Credentials on the Sandbox tab, showing the Client ID and Secret](https://www.paypalobjects.com/ppdevdocs/apps-and-credentials.png "Apps & Credentials, Sandbox tab: copy the Client ID and reveal the Secret.")
 
-### Exchange your keys for an access token (optional)
+### 4. Exchange your keys for an access token (optional)
 
 You only need this step if you call the PayPal REST API directly. The [PayPal Server SDK](https://www.npmjs.com/package/@paypal/paypal-server-sdk) handles OAuth2 and token refresh for you, so if you are using it (see [PayPal Checkout with Next.js](https://developer.paypal.com/guides/nextjs-checkout)), skip ahead and let the SDK manage tokens.
 
@@ -151,17 +151,17 @@ curl -X POST https://api-m.sandbox.paypal.com/v1/oauth2/token \
 
 Time to put it together. This is the loop you'll repeat throughout development: create an order, approve it as the buyer, and confirm it as the seller, all with test money.
 
-### Create an order
+### 1. Create an order
 
 Kick off a payment from your integration. If you don't have one yet, the [Low Code Buy Button](https://developer.paypal.com/guides/low-code-buy-button) and [PayPal Checkout with Next.js](https://developer.paypal.com/guides/nextjs-checkout) guides both create a real Sandbox order in minutes.
 
-### Approve it as the buyer
+### 2. Approve it as the buyer
 
 When the PayPal window opens, sign in with your **Personal** (buyer) account and approve the payment. Nothing is charged. The payment draws from the account's test balance.
 
 ![The buyer approving a test payment on the Sandbox site](https://www.paypalobjects.com/ppdevdocs/buyer-approval.png "Approve the payment signed in as the Personal (buyer) account.")
 
-### Confirm it as the seller
+### 3. Confirm it as the seller
 
 Sign in to `www.sandbox.paypal.com` as your **Business** (seller) account, or open that account in the Developer Dashboard, and check the activity. The captured payment should appear in the seller's transaction history.
 
