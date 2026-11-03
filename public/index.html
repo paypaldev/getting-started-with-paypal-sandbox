@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A minimal PayPal Sandbox Checkout demonstration.">
+    <title>PayPal Sandbox Checkout Sample</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: system-ui, sans-serif;
+        color: #172b4d;
+        background: #f5f7fa;
+      }
+      body {
+        box-sizing: border-box;
+        display: grid;
+        min-height: 100vh;
+        margin: 0;
+        padding: 2rem 1rem;
+        place-items: center;
+      }
+      main {
+        box-sizing: border-box;
+        width: min(100%, 28rem);
+        padding: 2rem;
+        border: 1px solid #dfe3e8;
+        border-radius: 0.75rem;
+        background: white;
+        box-shadow: 0 0.5rem 1.5rem rgb(23 43 77 / 8%);
+      }
+      h1 { margin-top: 0; font-size: 1.5rem; }
+      .price { font-size: 1.25rem; font-weight: 700; }
+      #status { min-height: 1.5rem; margin-bottom: 0; }
+      #status[data-state="error"] { color: #b42318; }
+      #status[data-state="success"] { color: #067647; }
+      .hint { color: #52606d; font-size: 0.9rem; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Sandbox sample checkout</h1>
+      <p>One sample item</p>
+      <p class="price" id="price">Loading price…</p>
+      <div id="paypal-button-container"></div>
+      <p id="status" role="status" aria-live="polite">Loading PayPal Checkout…</p>
+      <p class="hint">This demo uses PayPal Sandbox test money. No real payment is made.</p>
+    </main>
+    <script>
+      const statusElement = document.querySelector("#status");
+      const priceElement = document.querySelector("#price");
+
+      function showStatus(message, state) {
+        statusElement.textContent = message;
+        statusElement.dataset.state = state || "";
+      }
+
+      async function startCheckout() {
+        const configResponse = await fetch("/api/config");
+        const config = await configResponse.json();
+        if (!configResponse.ok) {
+          throw new Error(config.error || "Checkout setup could not be loaded.");
+        }
+
+        priceElement.textContent = `${config.currency} ${config.amount}`;
+        const sdkUrl = new URL("https://www.paypal.com/sdk/js");
+        sdkUrl.searchParams.set("client-id", config.clientId);
+        sdkUrl.searchParams.set("currency", config.currency);
+        sdkUrl.searchParams.set("intent", "capture");
+        sdkUrl.searchParams.set("components", "buttons");
+
+        const sdkScript = document.createElement("script");
+        sdkScript.src = sdkUrl.toString();
+        sdkScript.onload = () => {
+          try {
+            window.paypal.Buttons({
+              createOrder: async () => {
+                const response = await fetch("/api/orders", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({}),
+                });
+                const result = await response.json();
+                if (!response.ok) {
+                  throw new Error(result.error || "Checkout could not be started.");
+                }
+                return result.id;
+              },
+              onApprove: async (data) => {
+                showStatus("Approval received. Confirming your payment…");
+                const response = await fetch(`/api/orders/${encodeURIComponent(data.orderID)}/capture`, {
+                  method: "POST",
+                });
+                const result = await response.json();
+                if (!response.ok) {
+                  throw new Error(result.error || "Payment could not be confirmed.");
+                }
+                showStatus("Payment complete. Your Sandbox transaction was captured.", "success");
+              },
+              onCancel: () => {
+                showStatus("Checkout cancelled. No payment was captured.");
+              },
+              onError: (error) => {
+                console.error("PayPal Checkout failed.", error);
+                showStatus("Checkout could not be completed. Please try again.", "error");
+              },
+            }).render("#paypal-button-container")
+              .catch(() => showStatus("Checkout could not be loaded. Please try again.", "error"));
+            showStatus("Choose PayPal to continue.");
+          } catch (error) {
+            console.error("PayPal Checkout could not be initialized.", error);
+            showStatus("Checkout could not be loaded. Check your Sandbox Client ID and try again.", "error");
+          }
+        };
+        sdkScript.onerror = () => {
+          showStatus("PayPal Checkout could not be loaded. Check your connection and Sandbox Client ID.", "error");
+        };
+        document.head.append(sdkScript);
+      }
+
+      startCheckout().catch((error) => {
+        console.error("Checkout setup failed.", error);
+        showStatus(error.message || "Checkout setup could not be loaded.", "error");
+      });
+    </script>
+  </body>
+</html>

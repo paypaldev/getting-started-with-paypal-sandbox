@@ -239,3 +239,59 @@ To make a whole account fail without changing your code, turn on account-level n
 
 > [!TIP]
 > For the full mechanics and value lists, see PayPal's [negative testing](https://developer.paypal.com/tools/sandbox/negative-testing/) and [card testing](https://developer.paypal.com/tools/sandbox/card-testing/) guides.
+
+## Run the Express Checkout sample
+
+This repository includes a small Node.js application that demonstrates the complete Sandbox buyer flow: the PayPal JavaScript SDK button creates an order through this app, the buyer approves it on PayPal, and this app captures and verifies the payment through the PayPal Orders v2 REST API. It uses only the PayPal Sandbox API (`https://api-m.sandbox.paypal.com`) and a fixed server-configured sample amount. The browser never receives the Client Secret or supplies a price.
+
+### Prerequisites and Sandbox setup
+
+1. Install [Node.js 20.6 or newer](https://nodejs.org/) and npm.
+2. Sign in to the [PayPal Developer Dashboard](https://developer.paypal.com/dashboard/), switch to **Sandbox**, and open **Testing Tools → Sandbox Accounts**. Use the generated **Business** account as the seller and the **Personal** account as the buyer. Check that the buyer has Sandbox funds.
+3. Open **Apps & Credentials → Sandbox** and use the app associated with the Business seller, or create a Sandbox app. Copy its **Client ID** and **Secret**. These must be Sandbox credentials, not Live credentials.
+
+The existing [Sandbox account](#buyer-and-seller-accounts), [credential](#get-sandbox-api-credentials), and [buyer approval](#run-your-first-test-transaction) sections explain these Dashboard steps and the roles in more detail.
+
+### Configure and start
+
+Run these commands from the repository root.
+
+**Windows PowerShell**
+
+```powershell
+Copy-Item .env.example .env
+# Open .env in a text editor and replace the two placeholder credential values.
+npm install
+npm test
+npm start
+```
+
+**macOS / Linux**
+
+```bash
+cp .env.example .env
+# Open .env in a text editor and replace the two placeholder credential values.
+npm install
+npm test
+npm start
+```
+
+Put the Sandbox app's Client ID in `PAYPAL_CLIENT_ID` and its Secret in `PAYPAL_CLIENT_SECRET` in `.env`. The Secret is read only by the Node.js server; do not put it in `public/`, browser code, screenshots, or source control. `.env` is ignored by Git. `.env.example` contains placeholders only.
+
+The sample defaults to `PAYPAL_AMOUNT=10.00`, `PAYPAL_CURRENCY=USD`, and `PORT=3000`. To change the demo price, change the server environment setting in `.env`; the browser cannot override it. Keep the currency supported by the seller Sandbox account. `npm start` loads `.env` and requires Node.js 20.6 or newer.
+
+Open [http://localhost:3000](http://localhost:3000) in a browser. Select the PayPal button and sign in to the PayPal approval page with the **Personal** Sandbox buyer account, then approve. The page shows success only after the backend receives and verifies a completed capture for the configured amount and currency. To confirm the seller side, sign in at [www.sandbox.paypal.com](https://www.sandbox.paypal.com) with the **Business** Sandbox account and check its activity.
+
+### Test cancellation and failures
+
+- **Cancel:** Start checkout, then cancel or close the PayPal approval flow instead of approving. The page reports that checkout was cancelled and no payment was captured.
+- **Provider/API failure:** For a manual error-path check, temporarily replace the Sandbox Secret in `.env` with an intentionally invalid placeholder, restart the server, and attempt checkout. The page should show a generic failure rather than a PayPal error message; the server console logs PayPal's debug ID when the provider supplies one. Restore the correct Sandbox Secret and restart before testing a payment again.
+- **Automated checks:** `npm test` exercises request validation, server-controlled pricing, completed capture verification, and a simulated PayPal decline response. Provider failure details and debug IDs are checked to ensure only safe error text reaches the browser.
+
+This sample does not expose a negative-testing switch or send PayPal's `PayPal-Mock-Response` header. The existing [negative testing](#test-cards-and-simulating-declines) guidance describes PayPal's broader Sandbox tools; if you manually enable account-level negative testing for other experiments, turn it off when finished.
+
+### Implementation notes and limitations
+
+- The backend obtains an OAuth access token with the Sandbox Client ID and Secret, then calls the Orders v2 create and capture endpoints. The JavaScript SDK loads from PayPal's hosted SDK URL; only the public Client ID is sent to the browser.
+- The create endpoint accepts no buyer-supplied amount, and the capture endpoint validates the order ID and checks PayPal's completed capture, amount, and currency before reporting success. Provider messages are not returned to the buyer; available debug IDs and issue codes are logged by the server.
+- This is a local learning sample, not a production checkout. It uses a fixed item/price, has no order database, fulfillment, authentication, rate limiting, or durable idempotency strategy, and does not implement refunds, shipping, taxes, or card fields. Do not expose it as a production payment service without designing and reviewing those concerns.
