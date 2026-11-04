@@ -1,0 +1,24 @@
+{
+  "name": "getting-started-with-paypal-sandbox",
+  "version": "1.0.0",
+  "description": "The PayPal Sandbox is a self-contained test environment that mirrors live PayPal. You create orders and approve payments using fake accounts and test money. You can build and debug a full payment flow without touching a real account or moving a single real dollar. It has the same API feature set as the live environment, so a flow that works in the PayPal Sandbox behaves the same way when you go live.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paypaldev/getting-started-with-paypal-sandbox.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/paypaldev/getting-started-with-paypal-sandbox/issues"
+  },
+  "homepage": "https://github.com/paypaldev/getting-started-with-paypal-sandbox#readme",
+  "dependencies": {
+    "@paypal/paypal-server-sdk": "^2.5.0"
+  }
+}
