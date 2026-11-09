@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/paypaldev/getting-started-with-paypal-sandbox#readme",
   "dependencies": {
-    "@paypal/paypal-server-sdk": "^2.5.0"
+    "@paypal/paypal-server-sdk": "^2.5.0",
+    "@paypal/react-paypal-js": "^10.6.1"
   }
 }
